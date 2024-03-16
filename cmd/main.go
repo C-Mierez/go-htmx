@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -28,12 +30,17 @@ func newTemplate() *Templates {
 type Contact struct {
 	Name  string
 	Email string
+	Id    int
 }
 
+var id = 0
+
 func newContact(name string, email string) Contact {
+	id++
 	return Contact{
 		Name:  name,
 		Email: email,
+		Id:    id,
 	}
 }
 
@@ -60,6 +67,15 @@ func (pd *PageData) hasEmail(email string) bool {
 		}
 	}
 	return false
+}
+
+func (pd *PageData) indexOf(id int) int {
+	for i, contact := range pd.Contacts {
+		if contact.Id == id {
+			return i
+		}
+	}
+	return -1
 }
 
 type ContactFormData struct {
@@ -92,6 +108,7 @@ func main() {
 
 	e.Renderer = newTemplate()
 	e.Static("/css", "css")
+	e.Static("/images", "images")
 
 	// Variables
 	page := newPage()
@@ -119,6 +136,24 @@ func main() {
 
 		c.Render(http.StatusAccepted, "create-contact-form", newContactFormData())
 		return c.Render(http.StatusAccepted, "oob-contact", contact)
+	})
+
+	e.DELETE("/contacts/:id", func(c echo.Context) error {
+		time.Sleep(2 * time.Second)
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "Invalid id")
+		}
+
+		index := page.PageData.indexOf(id)
+		if index == -1 {
+			return c.String(http.StatusNotFound, "Contact not found")
+		}
+
+		page.PageData.Contacts = append(page.PageData.Contacts[:index], page.PageData.Contacts[index+1:]...)
+
+		return c.NoContent(http.StatusNoContent)
 	})
 
 	e.Logger.Fatal(e.Start("localhost:42069"))

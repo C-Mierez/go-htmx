@@ -5,6 +5,10 @@
     min-width: 0;
 }
 
+html {
+    font-size: 20px;
+}
+
 .htmx-indicator {
     opacity: 0;
     transition: opacity 500ms ease-in;
@@ -19,6 +23,25 @@
 #contacts {
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
+}
+
+.contacts__item {
+    display: flex;
+    align-items: center;
+    gap: 1ch;
+    line-height: 1;
+}
+
+.contacts__item.htmx-swapping {
+    opacity: 0;
+    transition: opacity 500ms ease-in-out;
+}
+
+.contacts__delete {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
 }
 
 #form__error {
