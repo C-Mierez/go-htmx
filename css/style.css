@@ -1,13 +1,8 @@
 * {
     box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-    min-width: 1;
-}
-
-body {
-    margin: 0;
-    background: red;
+    /* padding: 0;
+    margin: 0; */
+    min-width: 0;
 }
 
 .htmx-indicator {
@@ -19,4 +14,13 @@ body {
 }
 .htmx-request.htmx-indicator {
     opacity: 1;
+}
+
+#contacts {
+    display: flex;
+    flex-direction: column;
+}
+
+#form__error {
+    color: red;
 }

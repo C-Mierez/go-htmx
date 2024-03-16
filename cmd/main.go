@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+/* -------------------------------- Templates ------------------------------- */
 type Templates struct {
 	templates *template.Template
 }
@@ -23,8 +24,66 @@ func newTemplate() *Templates {
 	}
 }
 
-type Count struct {
-	Count int
+/* --------------------------------- Domain --------------------------------- */
+type Contact struct {
+	Name  string
+	Email string
+}
+
+func newContact(name string, email string) Contact {
+	return Contact{
+		Name:  name,
+		Email: email,
+	}
+}
+
+type Contacts = []Contact
+
+type PageData struct {
+	Contacts Contacts
+}
+
+func newPageData() PageData {
+	return PageData{
+		Contacts: Contacts{
+			newContact("John", "jd@email.com"),
+			newContact("Cane", "ck@email.com"),
+			newContact("test", "test"),
+		},
+	}
+}
+
+func (pd *PageData) hasEmail(email string) bool {
+	for _, contact := range pd.Contacts {
+		if contact.Email == email {
+			return true
+		}
+	}
+	return false
+}
+
+type ContactFormData struct {
+	Values map[string]string
+	Errors map[string]string
+}
+
+func newContactFormData() ContactFormData {
+	return ContactFormData{
+		Values: make(map[string]string),
+		Errors: make(map[string]string),
+	}
+}
+
+type Page struct {
+	PageData        PageData
+	ContactFormData ContactFormData
+}
+
+func newPage() Page {
+	return Page{
+		PageData:        newPageData(),
+		ContactFormData: newContactFormData(),
+	}
 }
 
 func main() {
@@ -32,19 +91,35 @@ func main() {
 	e.Use(middleware.Logger())
 
 	e.Renderer = newTemplate()
+	e.Static("/css", "css")
 
 	// Variables
-	count := Count{Count: 0}
+	page := newPage()
 
+	// Endpoints
 	e.GET("/", func(c echo.Context) error {
-
-		return c.Render(http.StatusAccepted, "index", count)
+		return c.Render(http.StatusAccepted, "index", page)
 	})
 
-	e.POST("/count", func(c echo.Context) error {
-		count.Count++
-		return c.Render(http.StatusAccepted, "count", count)
+	e.POST("/contacts", func(c echo.Context) error {
+		name := c.FormValue("name")
+		email := c.FormValue("email")
+
+		if page.PageData.hasEmail(email) {
+			formData := newContactFormData()
+			formData.Values["name"] = name
+			formData.Values["email"] = email
+			formData.Errors["email"] = "Email already exists"
+
+			return c.Render(http.StatusUnprocessableEntity, "create-contact-form", formData)
+		}
+
+		contact := newContact(name, email)
+		page.PageData.Contacts = append(page.PageData.Contacts, contact)
+
+		c.Render(http.StatusAccepted, "create-contact-form", newContactFormData())
+		return c.Render(http.StatusAccepted, "oob-contact", contact)
 	})
 
-	e.Logger.Fatal(e.Start(":42069"))
+	e.Logger.Fatal(e.Start("localhost:42069"))
 }
