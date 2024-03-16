@@ -1,11 +1,22 @@
-.htmx-indicator {
-    opacity:0;
-    transition: opacity 500ms ease-in;
-}
-.htmx-request .htmx-indicator{
-    opacity:1
-}
-.htmx-request.htmx-indicator{
-    opacity:1
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    min-width: 1;
 }
 
+body {
+    margin: 0;
+    background: red;
+}
+
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 500ms ease-in;
+}
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+.htmx-request.htmx-indicator {
+    opacity: 1;
+}
